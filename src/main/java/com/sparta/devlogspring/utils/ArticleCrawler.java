@@ -20,7 +20,7 @@ public class ArticleCrawler {
         driver.get(url + "sitemap");
         String source = driver.getPageSource();
         Matcher matcher = Pattern.compile(url + "[0-9]+").matcher(source);
-        ArrayList<String> arrays = new ArrayList<String>();
+        ArrayList<String> arrays = new ArrayList<>();
         while (matcher.find()) arrays.add(matcher.group());
         return arrays;
     }
@@ -53,5 +53,6 @@ public class ArticleCrawler {
         ArrayList<String> urlList = ArticleCrawler.sitemapCrawl("https://cat-minzzi.tistory.com/");
         ArrayList<String> urlList2 = ArticleCrawler.velocityCrawl("https://velog.io/@yu_jep/");
         System.out.println(urlList2);
+
     }
 }
