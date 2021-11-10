@@ -5,12 +5,15 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+@Component
 public class ArticleCrawler {
     static ChromeOptions options = new ChromeOptions()
             .addArguments("--headless", "--no-sandbox", "--single-process", "--disable-dev-shm-usage");
@@ -19,9 +22,15 @@ public class ArticleCrawler {
     public static ArrayList<String> sitemapCrawl(String url) {
         driver.get(url + "sitemap");
         String source = driver.getPageSource();
-        Matcher matcher = Pattern.compile(url + "[0-9]+").matcher(source);
         ArrayList<String> arrays = new ArrayList<>();
-        while (matcher.find()) arrays.add(matcher.group());
+        if (Pattern.compile(url+"\\d+").matcher(source).matches()) {
+            Matcher matcher = Pattern.compile(url + "\\d+").matcher(source);
+            while (matcher.find()) arrays.add(matcher.group());
+        } else {
+            String pattern = url+"entry/"+"[%\\-\\w\\d]+";
+            Matcher matcher = Pattern.compile(pattern).matcher(source);
+            while (matcher.find()) arrays.add(matcher.group());
+        }
         return arrays;
     }
 
@@ -43,7 +52,9 @@ public class ArticleCrawler {
             lastHeight = newHeight;
         }
         ArrayList<String> resultArray = new ArrayList<>();
-        for (WebElement element : driver.findElements(By.xpath("//*[@id='root']/div[2]/div[3]/div[4]/div[3]/div/div/a"))) {
+        List<WebElement> elementList = driver.findElements(
+                By.xpath("//*[@id='root']/div[2]/div[3]/div[4]/div[3]/div/div/a"));
+        for (WebElement element : elementList) {
             resultArray.add(element.getAttribute("href"));
         }
         return resultArray;
@@ -53,6 +64,5 @@ public class ArticleCrawler {
         ArrayList<String> urlList = ArticleCrawler.sitemapCrawl("https://cat-minzzi.tistory.com/");
         ArrayList<String> urlList2 = ArticleCrawler.velocityCrawl("https://velog.io/@yu_jep/");
         System.out.println(urlList2);
-
     }
 }
