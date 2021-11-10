@@ -5,6 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.time.LocalDateTime;
 
@@ -14,16 +17,9 @@ import java.time.LocalDateTime;
 public class Article {
 
     @Id
+    @MongoId(FieldType.OBJECT_ID)
     private ObjectId id;
-    private final String name;
-    private final String author;
-    private final String title;
-    private final String siteName;
-    private final String url;
-    private final String description;
-    private final String image;
-    private final LocalDateTime registered;
-    private final LocalDateTime modified;
-    private final int shared;
-    private final int comment;
+    @Field private final String name, author, title, siteName, url, description, image;
+    @Field private final LocalDateTime registered, modified;
+    @Field private int shared, comment;
 }
