@@ -1,5 +1,6 @@
 package com.sparta.devlogspring.model;
 
+import com.sparta.devlogspring.dto.ArticleRequestDto;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
@@ -19,7 +20,17 @@ public class Article {
     @Id
     @MongoId(FieldType.OBJECT_ID)
     private ObjectId id;
-    @Field private final String name, author, title, siteName, url, description, image;
-    @Field private final LocalDateTime registered, modified;
+    @Field private String name, author, title, siteName, url, description, image;
+    @Field private LocalDateTime registered;
     @Field private int shared, comment;
+
+    public void update(ArticleRequestDto requestDto) {
+        this.name = requestDto.getName();
+        this.author = requestDto.getAuthor();
+        this.title = requestDto.getTitle();
+        this.siteName = requestDto.getSiteName();
+        this.url = requestDto.getUrl();
+        this.description = requestDto.getDescription();
+        this.image = requestDto.getImage();
+    }
 }

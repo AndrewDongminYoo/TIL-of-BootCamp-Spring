@@ -3,6 +3,7 @@ package com.sparta.devlogspring.model;
 import com.sparta.devlogspring.dto.MemberRequestDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.Columns;
 import org.springframework.data.mongodb.core.mapping.Field;
 

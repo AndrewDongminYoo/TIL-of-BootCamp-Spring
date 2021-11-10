@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class ArticleRequestDto {
 
     private final String name, author, title, siteName, url, description, image;
-    private final LocalDateTime registered, modified;
+    private final LocalDateTime registered;
 
     public ArticleRequestDto(JSONObject articleJson) {
         this.name = articleJson.getString("name");
@@ -22,6 +22,5 @@ public class ArticleRequestDto {
         this.description = articleJson.getString("description");
         this.image = articleJson.getString("image");
         this.registered = (LocalDateTime) articleJson.get("registered");
-        this.modified = (LocalDateTime) articleJson.get("modified");
     }
 }
