@@ -4,6 +4,7 @@ import com.sparta.devlogspring.dto.MemberRequestDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.hibernate.annotations.Columns;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -16,7 +17,7 @@ public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @Column
     private String name;
@@ -40,6 +41,7 @@ public class Member {
     private String profileImage;
 
     public Member(MemberRequestDto requestDto) {
+        this.id = new ObjectId().toString();
         this.name = requestDto.getName();
         this.blog = requestDto.getBlog();
         this.blogType = requestDto.getBlogType();
@@ -47,5 +49,9 @@ public class Member {
         this.specialty = requestDto.getSpecialty();
         this.hobby = requestDto.getHobby();
         this.profileImage = requestDto.getProfileImage();
+    }
+
+    public boolean hasBlog() {
+        return this.getBlog().startsWith("http");
     }
 }

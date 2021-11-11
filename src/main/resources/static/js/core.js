@@ -28,18 +28,17 @@ const thumbnail = (til_post) => {
         </li>`
 }
 
-const rankAuthor = (author, count) => {
-    const { username, blog, image, hobby, specialty } = author;
+const rankAuthor = (author) => {
+    const { name, blog, profileImage, hobby, specialty } = author;
     return `
         <a class="item_recommend" href="${blog}" target="_blank">
             <span class="thumb_g">
-                <img src="${image}" width="36" height="36" class="img_thumb" alt="${username}">
+                <img src="${profileImage}" width="36" height="36" class="img_thumb" alt="${name}">
             </span>
             <div class="detail_recommend">
                 <div class="inner_recommend">
-                    <span class="txt_recommend">${username} 🔥</span>
+                    <span class="txt_recommend">${name} 🔥</span>
                     <span class="txt_info">
-                        <span class="txt_g">글 ${count}</span>
                         <span class="ico_dot"></span>
                         <span class="txt_g">${hobby}</span>
                         <span class="txt_g">${specialty}</span>
@@ -50,15 +49,15 @@ const rankAuthor = (author, count) => {
 }
 
 const unrankAuthor = (author) => {
-    const { username, blog, image, hobby, specialty } = author;
+    const { name, blog, profileImage, hobby, specialty } = author;
     return `
         <a class="item_recommend" href="${blog}" target="_blank">
             <span class="thumb_g">
-                <img src="${image}" width="36" height="36" class="img_thumb" alt="${username}">
+                <img src="${profileImage}" width="36" height="36" class="img_thumb" alt="${name}">
             </span>
             <div class="detail_recommend">
                 <div class="inner_recommend">
-                    <span class="txt_recommend">${username}</span>
+                    <span class="txt_recommend">${name}</span>
                     <span class="txt_info">
                         <span class="ico_dot"></span>
                         <span class="txt_g">${hobby}</span>
@@ -76,7 +75,7 @@ const getRank = () => {
             let rankers = []
             results
                 .forEach(person => {
-                    let template = rankAuthor(person, person["blog_list"].length)
+                    let template = rankAuthor(person)
                     rankers.push(template)
                 })
             document.querySelector("#rec1").innerHTML = rankers.join("")
@@ -89,10 +88,10 @@ const comingSoon = () => {
         .then((result) => {
             let names = [];
 
-            result.forEach((nbc, i) => {
+            result.forEach((nbc) => {
                 names.push(`<a class="keyword_elem"
                    href="https://teamsparta.notion.site/0dd2d4c1d21e41dabf60c45cf2c0c9a6?v=226b3128e1f14d8393e0ce475946446c"
-                   target="_blank">${(i % 2 === 0 ? "" : " ") + nbc}</a>`)
+                   target="_blank">${nbc.name}</a>`)
             });
             let keyword = document.getElementById("keywordItemListBlock")
             keyword.innerHTML = names.join("")
@@ -100,7 +99,7 @@ const comingSoon = () => {
 }
 
 const cannotCrawl = () => {
-    fetch('/api/notion_naver_medium')
+    fetch('/api/unrank')
         .then(res => res.json())
         .then(results => {
             let rankers = []

@@ -2,8 +2,6 @@ package com.sparta.devlogspring.dto;
 
 import lombok.Getter;
 
-import javax.persistence.Column;
-
 @Getter
 public class MemberRequestDto {
     private String name;
