@@ -1,5 +1,6 @@
 package com.sparta.devlogspring.utils;
 
+import com.sparta.devlogspring.dto.ArticleRequestDto;
 import org.json.JSONObject;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -48,15 +49,26 @@ public class ArticleCrawler {
         return result;
     }
 
-    public static ArrayList<String> crawlerRouter(String url) {
-        if (Objects.equals(extractHost(url), "tistory.com")) {
-            return sitemapCrawl(url);
+    public static ArrayList<ArticleRequestDto> crawlerRouter(String url) {
+        ArrayList<ArticleRequestDto> result = new ArrayList<>();
+        ArrayList<String> targetList;
+        if (Objects.equals(extractHost(url), "velog.io")) {
+            targetList = velocityCrawl(url);
+            for (String target: targetList) {
+                result.add(velogCrawler(target));
+            }
+        } else if (Objects.equals(extractHost(url), "tistory.com")) {
+            targetList = sitemapCrawl(url);
+            for (String target: targetList) {
+                result.add(metaTagsCrawl(target));
+            }
         } else if (Objects.equals(extractHost(url), "github.io")) {
-            return sitemapCrawl(url);
-        } else if (Objects.equals(extractHost(url), "velog.io")) {
-            return velocityCrawl(url);
+            targetList = sitemapCrawl(url);
+            for (String target: targetList) {
+                result.add(metaTagsCrawl(target));
+            }
         }
-        return new ArrayList<>();
+        return result;
     }
 
     public static ArrayList<String> sitemapCrawl(String url) {
@@ -103,7 +115,7 @@ public class ArticleCrawler {
         return resultArray;
     }
 
-    public static void metaTagsCrawl(String url) {
+    public static ArticleRequestDto metaTagsCrawl(String url) {
         ChromeDriver driver = getStarted();
         String title = driver.findElement(By.cssSelector("meta[property='og:title']")).getAttribute("content");
         String author = driver.findElement(By.cssSelector("meta[property='og:article:author']")).getAttribute("content");
@@ -111,10 +123,11 @@ public class ArticleCrawler {
         String registered = driver.findElement(By.cssSelector("meta[property='og:regDate']")).getAttribute("content");
         String image = driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
         String description = driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
-        makeJSON(title, author, siteName, url, description, image, registered);
+        JSONObject result = makeJSON(title, author, siteName, url, description, image, registered);
+        return new ArticleRequestDto(result);
     }
 
-    public static void velogCrawler(String url) {
+    public static ArticleRequestDto velogCrawler(String url) {
         ChromeDriver driver = getStarted();
         String title = driver.getTitle();
         String author = driver.findElement(By.cssSelector("span.username")).getText();
@@ -122,7 +135,8 @@ public class ArticleCrawler {
         String registered = driver.findElement(By.cssSelector("div.information > span:nth-child(3)")).getText();
         String image = driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
         String description = driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
-        makeJSON(title, author, siteName, url, description, image, registered);
+        JSONObject result = makeJSON(title, author, siteName, url, description, image, registered);
+        return new ArticleRequestDto(result);
     }
 
     public static JSONObject makeJSON(String title, String author, String siteName, String url, String description, String image, String registered) {
