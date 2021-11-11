@@ -7,9 +7,9 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.data.mongodb.core.mapping.FieldType;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import java.time.LocalDateTime;
 
 @Getter
@@ -18,8 +18,8 @@ import java.time.LocalDateTime;
 public class Article {
 
     @Id
-    @MongoId(FieldType.OBJECT_ID)
-    private ObjectId id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     @Field private String name, author, title, siteName, url, description, image;
     @Field private LocalDateTime registered;
     @Field private int shared, comment;

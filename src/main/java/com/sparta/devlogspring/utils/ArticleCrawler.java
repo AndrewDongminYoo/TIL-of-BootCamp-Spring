@@ -144,7 +144,7 @@ public class ArticleCrawler {
         Matcher secondsAgo = Pattern.compile("[약 ]*(\\d{1,2})초 전").matcher(dateString);
         Matcher regex1 = Pattern.compile("(\\d{4})년 (\\d{1,2})월 (\\d{1,2})일").matcher(dateString);
         Matcher regex2 = Pattern.compile("(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})").matcher(dateString);
-        Matcher regex02 = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})\\+09:00").matcher(dateString);
+        Matcher regex3 = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})\\+09:00").matcher(dateString);
         if (Objects.equals(dateString,"어제")) {
             return LocalDateTime.now().minusDays(1);
         } else if (yesterday.find()) {
@@ -165,7 +165,7 @@ public class ArticleCrawler {
         } else if (regex2.find()) {
             return LocalDateTime.parse(dateString,
                     DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        } else if (regex02.find()) {
+        } else if (regex3.find()) {
             return LocalDateTime.parse(dateString,
                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         }
