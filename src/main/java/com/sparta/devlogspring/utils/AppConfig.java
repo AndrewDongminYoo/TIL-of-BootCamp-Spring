@@ -13,7 +13,7 @@ public class AppConfig {
 
     public static @Bean
     MongoClient mongoClient() {
-        return MongoClients.create("mongodb://admin:rew748596@3.35.149.46:27017");
+        return MongoClients.create("mongodb://localhost:27017");
     }
 
     public static @Bean

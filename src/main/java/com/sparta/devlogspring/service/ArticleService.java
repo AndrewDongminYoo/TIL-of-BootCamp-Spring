@@ -13,12 +13,12 @@ public class ArticleService {
 
     private final ArticleJpaRepository articleJpaRepository;
 
-    @Transactional
-    public Long update(Long id, ArticleRequestDto requestDto) {
-        Article article = articleJpaRepository.findById(id).orElseThrow(
-                ()-> new NullPointerException("아이디가 존재하지 않습니다.")
-        );
-        article.update(requestDto);
-        return id;
-    }
+//    @Transactional
+//    public Long update(Long id, ArticleRequestDto requestDto) {
+//        Article article = articleJpaRepository.findById(id).orElseThrow(
+//                ()-> new NullPointerException("아이디가 존재하지 않습니다.")
+//        );
+//        article.update(requestDto);
+//        return id;
+//    }
 }

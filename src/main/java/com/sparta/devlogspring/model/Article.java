@@ -2,29 +2,46 @@ package com.sparta.devlogspring.model;
 
 import com.sparta.devlogspring.dto.ArticleRequestDto;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import java.time.LocalDateTime;
 
 @Getter
-@Document
-@RequiredArgsConstructor
+@Entity
+@NoArgsConstructor
 public class Article {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @javax.persistence.Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(nullable = false)
     private Long id;
-    @Field private String name, author, title, siteName, url, description, image;
-    @Field private LocalDateTime registered;
-    @Field private int shared, comment;
 
-    public void update(ArticleRequestDto requestDto) {
+    @Column
+    private String name;
+    @Column
+    private String author;
+    @Column
+    private String title;
+    @Column
+    private String siteName;
+    @Column
+    private String url;
+    @Column
+    private String description;
+    @Column
+    private String image;
+    @Column
+    private LocalDateTime registered;
+    @Column
+    private int shared, comment;
+
+    public Article(ArticleRequestDto requestDto) {
         this.name = requestDto.getName();
         this.author = requestDto.getAuthor();
         this.title = requestDto.getTitle();
@@ -32,5 +49,8 @@ public class Article {
         this.url = requestDto.getUrl();
         this.description = requestDto.getDescription();
         this.image = requestDto.getImage();
+        this.registered = requestDto.getRegistered();
+        this.shared = 0;
+        this.comment = 0;
     }
 }

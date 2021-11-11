@@ -21,13 +21,13 @@ public class Member {
     @Column
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String blog;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String blogType;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String siteName;
 
     @Column(nullable = false)
@@ -36,7 +36,7 @@ public class Member {
     @Column(nullable = false)
     private String hobby;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String profileImage;
 
     public Member(MemberRequestDto requestDto) {
