@@ -23,17 +23,11 @@ dependencies {
     implementation 'org.seleniumhq.selenium:selenium-java:4.0.0'
     // https://mvnrepository.com/artifact/org.json/json
     implementation 'org.json:json:20210307'
-    // https://mvnrepository.com/artifact/org.springframework.data/spring-data-mongodb
-    implementation 'org.springframework.data:spring-data-mongodb:3.2.6'
-    // https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver
-    implementation 'org.mongodb:mongo-java-driver:3.12.10'
-    // https://mvnrepository.com/artifact/org.mongodb/mongodb-driver
-    implementation 'org.mongodb:mongodb-driver:3.12.10'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.5.6'
     implementation 'org.springframework.boot:spring-boot-starter-web:2.5.6'
     compileOnly 'org.projectlombok:lombok:1.18.22'
     developmentOnly 'org.springframework.boot:spring-boot-devtools:2.5.6'
-    runtimeOnly 'mysql:mysql-connector-java'
+    runtimeOnly 'mysql:mysql-connector-java:8.0.25'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.6'
 }
