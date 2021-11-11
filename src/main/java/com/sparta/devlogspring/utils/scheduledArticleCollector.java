@@ -30,13 +30,13 @@ public class scheduledArticleCollector {
             TimeUnit.SECONDS.sleep(1);
             String target = member.getBlog();
             try {
-                URL u = new URL(target);
+                new URL(target);
                 ArrayList<ArticleRequestDto> dtoList = ArticleCrawler.crawlerRouter(target);
                 for (ArticleRequestDto dto : dtoList) {
                     articleRepository.save(new Article(dto));
                 }
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
         }
     }
