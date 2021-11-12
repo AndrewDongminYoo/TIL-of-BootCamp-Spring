@@ -3,9 +3,6 @@ package com.sparta.devlogspring.model;
 import com.sparta.devlogspring.dto.ArticleRequestDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
