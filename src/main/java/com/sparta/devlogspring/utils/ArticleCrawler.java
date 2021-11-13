@@ -1,7 +1,8 @@
 package com.sparta.devlogspring.utils;
 
 import com.sparta.devlogspring.dto.ArticleRequestDto;
-import org.json.JSONObject;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
@@ -11,29 +12,33 @@ import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class ArticleCrawler {
 
-    public static ChromeDriver getStarted() {
-        ChromeOptions options = new ChromeOptions()
-                .addArguments("--headless", "--no-sandbox", "--single-process", "--disable-dev-shm-usage");
-        return new ChromeDriver(options);
+    public ChromeDriver getStarted() {
+        ChromeOptions options = new ChromeOptions();
+//      options.addArguments("--headless", "--no-sandbox", "--disable-dev-shm-usage", "--allow-remote-connections-from-ips=127.0.0.1");
+        ChromeDriver driver = new ChromeDriver(options);
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        return driver;
     }
 
-    public static void finish(ChromeDriver chromeDriver) {
+    public void finish(ChromeDriver chromeDriver) {
         chromeDriver.quit();
     }
 
-    public static String extractHost(String urlString) {
+    public String extractHost(String urlString) {
         String result = "";
         try {
             URL url = new URL(urlString);
@@ -49,31 +54,32 @@ public class ArticleCrawler {
         return result;
     }
 
-    public static ArrayList<ArticleRequestDto> crawlerRouter(String url) {
+    public ArrayList<ArticleRequestDto> crawlerRouter(String url, String name) {
         ArrayList<ArticleRequestDto> result = new ArrayList<>();
         ArrayList<String> targetList;
         if (Objects.equals(extractHost(url), "velog.io")) {
-            targetList = velocityCrawl(url);
+            targetList = velocityCrawl(url, name);
             for (String target: targetList) {
-                result.add(velogCrawler(target));
+                result.add(velogCrawler(target, name));
             }
         } else if (Objects.equals(extractHost(url), "tistory.com")) {
-            targetList = sitemapCrawl(url);
+            targetList = sitemapCrawl(url, name);
             for (String target: targetList) {
-                result.add(metaTagsCrawl(target));
+                result.add(metaTagsCrawl(target, name));
             }
         } else if (Objects.equals(extractHost(url), "github.io")) {
-            targetList = sitemapCrawl(url);
+            targetList = sitemapCrawl(url, name);
             for (String target: targetList) {
-                result.add(metaTagsCrawl(target));
+                result.add(metaTagsCrawl(target, name));
             }
         }
         return result;
     }
 
-    public static ArrayList<String> sitemapCrawl(String url) {
+    public ArrayList<String> sitemapCrawl(String url, String name) {
         ChromeDriver driver = getStarted();
         driver.get(url + "sitemap");
+        
         String source = driver.getPageSource();
         ArrayList<String> arrays = new ArrayList<>();
         if (Pattern.compile(url + "\\d+").matcher(source).matches()) {
@@ -88,9 +94,10 @@ public class ArticleCrawler {
         return arrays;
     }
 
-    public static ArrayList<String> velocityCrawl(String url) {
+    public ArrayList<String> velocityCrawl(String url, String name) {
         ChromeDriver driver = getStarted();
         driver.get(url);
+        
         String scroll = "window.scrollTo(0, document.body.scrollHeight);";
         String height = "return document.body.scrollHeight;";
         Long lastHeight = (Long) ((JavascriptExecutor) driver).executeScript(height);
@@ -115,32 +122,38 @@ public class ArticleCrawler {
         return resultArray;
     }
 
-    public static ArticleRequestDto metaTagsCrawl(String url) {
+    public ArticleRequestDto metaTagsCrawl(String url, String name) {
         ChromeDriver driver = getStarted();
+        driver.get(url);
         String title = driver.findElement(By.cssSelector("meta[property='og:title']")).getAttribute("content");
         String author = driver.findElement(By.cssSelector("meta[property='og:article:author']")).getAttribute("content");
         String siteName = driver.findElement(By.cssSelector("meta[property='og:site_name']")).getAttribute("content");
         String registered = driver.findElement(By.cssSelector("meta[property='og:regDate']")).getAttribute("content");
         String image = driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
         String description = driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
-        JSONObject result = makeJSON(title, author, siteName, url, description, image, registered);
+        Document result = makeJSON(name, title, author, siteName, url, description, image, registered);
+        finish(driver);
         return new ArticleRequestDto(result);
     }
 
-    public static ArticleRequestDto velogCrawler(String url) {
+    public ArticleRequestDto velogCrawler(String url, String name) {
         ChromeDriver driver = getStarted();
+        driver.get(url);
         String title = driver.getTitle();
-        String author = driver.findElement(By.cssSelector("span.username")).getText();
-        String siteName = driver.findElement(By.cssSelector("a.user-logo")).getText();
-        String registered = driver.findElement(By.cssSelector("div.information > span:nth-child(3)")).getText();
         String image = driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
         String description = driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
-        JSONObject result = makeJSON(title, author, siteName, url, description, image, registered);
+        String author = driver.findElement(By.cssSelector("span.username a")).getText();
+        String siteName = driver.findElement(By.cssSelector("a.user-logo")).getText();
+        String registered = driver.findElement(By.cssSelector("div.information > span:nth-child(3)")).getText();
+        Document result = makeJSON(name, title, author, siteName, url, description, image, registered);
+        finish(driver);
         return new ArticleRequestDto(result);
     }
 
-    public static JSONObject makeJSON(String title, String author, String siteName, String url, String description, String image, String registered) {
-        JSONObject article = new JSONObject();
+    public Document makeJSON(String name, String title, String author, String siteName, String url, String description, String image, String registered) {
+        Document article = new Document();
+        article.put("id", ObjectId.get().toString());
+        article.put("name", name);
         article.put("title", title);
         article.put("author", author);
         article.put("siteName", siteName);
@@ -148,10 +161,11 @@ public class ArticleCrawler {
         article.put("description", description);
         article.put("image", image);
         article.put("registered", getLocalTime(registered));
+        System.out.println(article);
         return article;
     }
 
-    public static LocalDateTime getLocalTime(String dateString) {
+    public LocalDateTime getLocalTime(String dateString) {
         Matcher yesterday = Pattern.compile("[약 ]*(\\d{1,2})일 전").matcher(dateString);
         Matcher hoursAgo = Pattern.compile("[약 ]*(\\d{1,2})시간 전").matcher(dateString);
         Matcher minutesAgo = Pattern.compile("[약 ]*(\\d{1,2})분 전").matcher(dateString);
@@ -162,20 +176,24 @@ public class ArticleCrawler {
         if (Objects.equals(dateString,"어제")) {
             return LocalDateTime.now().minusDays(1);
         } else if (yesterday.find()) {
-            int day = Integer.parseInt(yesterday.group());
+            int day = Integer.parseInt(yesterday.group(1));
             return LocalDateTime.now().minusDays(day);
         } else if (hoursAgo.find()) {
-            int hour = Integer.parseInt(hoursAgo.group());
+            int hour = Integer.parseInt(hoursAgo.group(1));
             return LocalDateTime.now().minusHours(hour);
         } else if (minutesAgo.find()) {
-            int minute = Integer.parseInt(minutesAgo.group());
+            int minute = Integer.parseInt(minutesAgo.group(1));
             return LocalDateTime.now().minusMinutes(minute);
         } else if (secondsAgo.find()) {
-            int seconds = Integer.parseInt(secondsAgo.group());
+            int seconds = Integer.parseInt(secondsAgo.group(1));
             return LocalDateTime.now().minusSeconds(seconds);
         } else if (regex1.find()) {
-            return LocalDateTime.parse(dateString,
-                    DateTimeFormatter.ofPattern("yyyy년 MM월 dd일"));
+            int year = Integer.parseInt(regex1.group(1));
+            int month = Integer.parseInt(regex1.group(2));
+            int day = Integer.parseInt(regex1.group(3));
+            LocalDate date = LocalDate.of(year, month, day);
+            LocalTime time = LocalTime.now();
+            return LocalDateTime.of(date, time);
         } else if (regex2.find()) {
             return LocalDateTime.parse(dateString,
                     DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));

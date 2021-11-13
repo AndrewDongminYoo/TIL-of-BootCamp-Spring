@@ -6,7 +6,6 @@ import com.sparta.devlogspring.model.Member;
 import com.sparta.devlogspring.model.MemberJpaRepository;
 import com.sparta.devlogspring.service.ArticleService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -67,7 +66,7 @@ public class ArticleRestController {
 
     private Long countArticle(Member member) {
         String name = member.getName();
-        return articleJpaRepository.countByNameIs(name);
+        return articleJpaRepository.countByName(name);
     }
 }
 

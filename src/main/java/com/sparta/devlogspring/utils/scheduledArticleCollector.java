@@ -21,23 +21,35 @@ public class scheduledArticleCollector {
 
     private final ArticleJpaRepository articleRepository;
     private final MemberJpaRepository memberRepository;
+    private final ArticleCrawler articleCrawler;
 
-    @Scheduled(cron = "0 0 1,9,17 * * *")
+    public void updateCount(String name) {
+
+
+    }
+
+    @Scheduled(cron = "0 0/3 * * * *")
     public void updateArticle() throws InterruptedException {
-        System.out.println("블로그를 탐색합니다.");
+
         List<Member> memberList = memberRepository.findAll();
+        System.out.println(memberList);
         for (Member member : memberList) {
             TimeUnit.SECONDS.sleep(1);
             String target = member.getBlog();
+            String name = member.getName();
             try {
                 new URL(target);
-                ArrayList<ArticleRequestDto> dtoList = ArticleCrawler.crawlerRouter(target);
+                ArrayList<ArticleRequestDto> dtoList = articleCrawler.crawlerRouter(target, name);
                 for (ArticleRequestDto dto : dtoList) {
+                    String siteName = dto.getSiteName();
+                    member.setSiteName(siteName);
                     articleRepository.save(new Article(dto));
                 }
             } catch (MalformedURLException e) {
                 System.out.println(e.getMessage());
             }
+            Long count = articleRepository.countByName(name);
+            member.setArticles(count);
         }
     }
 }

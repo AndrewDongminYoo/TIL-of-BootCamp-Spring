@@ -1,5 +1,5 @@
 const thumbnail = (til_post) => {
-    const { title, description, site_name, url, image, registered, shared, comment, name } = til_post;
+    const { title, description, siteName, url, image, registered, shared, comment, name } = til_post;
     return `
         <li class="list_has_image animation_up_late">
             <a href="${url}" target="_blank" class="link_post #post_list">
@@ -17,7 +17,7 @@ const thumbnail = (til_post) => {
                         <span class="ico_dot"></span>
                         <span class="publish_time">${moment(registered).subtract(9, 'hours').fromNow()}</span>
                         <span class="ico_dot"></span>
-                        <span class="txt_by">${site_name}</span>
+                        <span class="txt_by">${siteName}</span>
                         <span class="ico_dot"></span>
                         <span>By ${name}</span>
                     </span>

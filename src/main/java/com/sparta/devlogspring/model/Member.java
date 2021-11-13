@@ -3,16 +3,19 @@ package com.sparta.devlogspring.model;
 import com.sparta.devlogspring.dto.MemberRequestDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @Entity(name="Member")
 public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false)
     private String id;
 
     @Column
@@ -36,7 +39,12 @@ public class Member {
     @Column
     private String profileImage;
 
+    @Column
+    private Long articles;
+
     public Member(MemberRequestDto requestDto) {
+        System.out.println(requestDto);
+        this.id = requestDto.getId();
         this.name = requestDto.getName();
         this.blog = requestDto.getBlog();
         this.blogType = requestDto.getBlogType();

@@ -4,21 +4,21 @@ import com.sparta.devlogspring.dto.ArticleRequestDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Id;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Entity
 @NoArgsConstructor
 public class Article {
-    @javax.persistence.Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    private UUID id;
+    private String id;
 
     @Column
     private String name;
@@ -40,6 +40,8 @@ public class Article {
     private int shared, comment;
 
     public Article(ArticleRequestDto requestDto) {
+        System.out.println(requestDto);
+        this.id = requestDto.getId();
         this.name = requestDto.getName();
         this.author = requestDto.getAuthor();
         this.title = requestDto.getTitle();

@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class MemberRequestDto {
+    private String id;
     private String name;
     private String blog;
     private String blogType;
