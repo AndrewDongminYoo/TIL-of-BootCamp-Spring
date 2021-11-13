@@ -9,6 +9,8 @@ import org.bson.types.ObjectId;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
@@ -28,9 +30,16 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class ArticleCrawler {
 
-    public final Chrome chrome;
     public final ArticleJpaRepository articleRepository;
     public final MemberJpaRepository memberRepository;
+
+    public ChromeDriver ChromeDriver() {
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless", "--no-sandbox", "--disable-dev-shm-usage", "--allow-remote-connections-from-ips=127.0.0.1");
+        ChromeDriver driver = new ChromeDriver(options);
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        return driver;
+    }
 
     public String extractHost(String urlString) {
         String result = "";
@@ -71,8 +80,9 @@ public class ArticleCrawler {
     }
 
     public ArrayList<String> sitemapCrawl(String url) {
-        chrome.driver.get(url + "sitemap");
-        String source = chrome.driver.getPageSource();
+        ChromeDriver driver = new ChromeDriver();
+        driver.get(url + "sitemap");
+        String source = driver.getPageSource();
         ArrayList<String> arrays = new ArrayList<>();
         if (Pattern.compile(url + "\\d+").matcher(source).matches()) {
             Matcher matcher = Pattern.compile(url + "\\d+").matcher(source);
@@ -92,27 +102,29 @@ public class ArticleCrawler {
                 }
             }
         }
+        driver.quit();
         return arrays;
     }
 
     public ArrayList<String> velocityCrawl(String url) {
-        chrome.driver.get(url);
+        ChromeDriver driver = new ChromeDriver();
+        driver.get(url);
         String scroll = "window.scrollTo(0, document.body.scrollHeight);";
         String height = "return document.body.scrollHeight;";
-        Long lastHeight = (Long) ((JavascriptExecutor) chrome.driver).executeScript(height);
+        Long lastHeight = (Long) ((JavascriptExecutor) driver).executeScript(height);
         while (true) {
-            ((JavascriptExecutor) chrome.driver).executeScript(scroll);
+            ((JavascriptExecutor) driver).executeScript(scroll);
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            Long newHeight = (Long) ((JavascriptExecutor) chrome.driver).executeScript(height);
+            Long newHeight = (Long) ((JavascriptExecutor) driver).executeScript(height);
             if (lastHeight.equals(newHeight)) break;
             lastHeight = newHeight;
         }
         ArrayList<String> resultArray = new ArrayList<>();
-        List<WebElement> elementList = chrome.driver.findElements(
+        List<WebElement> elementList = driver.findElements(
                 By.xpath("//*[@id='root']/div[2]/div[3]/div[4]/div[3]/div/div/a"));
         for (WebElement element : elementList) {
             String href = element.getAttribute("href");
@@ -120,30 +132,35 @@ public class ArticleCrawler {
                 resultArray.add(href);
             }
         }
+        driver.quit();
         return resultArray;
     }
 
     public ArticleRequestDto metaTagsCrawl(String url, String name) {
-        chrome.driver.get(url);
-        String title = chrome.driver.findElement(By.cssSelector("meta[property='og:title']")).getAttribute("content");
-        String author = chrome.driver.findElement(By.cssSelector("meta[property='og:article:author']")).getAttribute("content");
-        String siteName = chrome.driver.findElement(By.cssSelector("meta[property='og:site_name']")).getAttribute("content");
-        String registered = chrome.driver.findElement(By.cssSelector("meta[property='og:regDate']")).getAttribute("content");
-        String image = chrome.driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
-        String description = chrome.driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
+        ChromeDriver driver = new ChromeDriver();
+        driver.get(url);
+        String title = driver.findElement(By.cssSelector("meta[property='og:title']")).getAttribute("content");
+        String author = driver.findElement(By.cssSelector("meta[property='og:article:author']")).getAttribute("content");
+        String siteName = driver.findElement(By.cssSelector("meta[property='og:site_name']")).getAttribute("content");
+        String registered = driver.findElement(By.cssSelector("meta[property='og:regDate']")).getAttribute("content");
+        String image = driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
+        String description = driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
         Document result = makeJSON(name, title, author, siteName, url, description, image, registered);
+        driver.quit();
         return new ArticleRequestDto(result);
     }
 
     public ArticleRequestDto velogCrawler(String url, String name) {
-        chrome.driver.get(url);
-        String title = chrome.driver.getTitle();
-        String image = chrome.driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
-        String description = chrome.driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
-        String author = chrome.driver.findElement(By.cssSelector("span.username a")).getText();
-        String siteName = chrome.driver.findElement(By.cssSelector("a.user-logo")).getText();
-        String registered = chrome.driver.findElement(By.cssSelector("div.information > span:nth-child(3)")).getText();
+        ChromeDriver driver = new ChromeDriver();
+        driver.get(url);
+        String title = driver.getTitle();
+        String image = driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
+        String description = driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
+        String author = driver.findElement(By.cssSelector("span.username a")).getText();
+        String siteName = driver.findElement(By.cssSelector("a.user-logo")).getText();
+        String registered = driver.findElement(By.cssSelector("div.information > span:nth-child(3)")).getText();
         Document result = makeJSON(name, title, author, siteName, url, description, image, registered);
+        driver.quit();
         return new ArticleRequestDto(result);
     }
 
