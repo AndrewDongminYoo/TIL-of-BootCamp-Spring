@@ -39,9 +39,9 @@ public class ArticleRestController {
                 .findAll()
                 .stream()
                 .filter(Member::hasBlog)
-                .filter(n->countArticle(n)>0)
+                .filter(n->n.getArticles()>0)
                 .sorted(Comparator
-                        .comparing(this::countArticle)
+                        .comparing(Member::getArticles)
                         .reversed())
                 .collect(Collectors.toList());
     }
@@ -51,7 +51,7 @@ public class ArticleRestController {
                 .findAll()
                 .stream()
                 .filter(Member::hasBlog)
-                .filter(n->countArticle(n)==0)
+                .filter(n->n.getArticles()==0)
                 .collect(Collectors.toList());
     }
 
@@ -62,11 +62,6 @@ public class ArticleRestController {
                 .stream()
                 .filter(member->member.getBlog().isEmpty())
                 .collect(Collectors.toList());
-    }
-
-    private Long countArticle(Member member) {
-        String name = member.getName();
-        return articleJpaRepository.countByName(name);
     }
 }
 
