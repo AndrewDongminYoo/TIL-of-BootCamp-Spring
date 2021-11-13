@@ -1,13 +1,14 @@
 package com.sparta.devlogspring.utils;
 
 import com.sparta.devlogspring.dto.ArticleRequestDto;
+import com.sparta.devlogspring.model.ArticleJpaRepository;
+import com.sparta.devlogspring.model.MemberJpaRepository;
+import lombok.RequiredArgsConstructor;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
@@ -24,19 +25,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
+@RequiredArgsConstructor
 public class ArticleCrawler {
 
-    public ChromeDriver getStarted() {
-        ChromeOptions options = new ChromeOptions();
-//      options.addArguments("--headless", "--no-sandbox", "--disable-dev-shm-usage", "--allow-remote-connections-from-ips=127.0.0.1");
-        ChromeDriver driver = new ChromeDriver(options);
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-        return driver;
-    }
-
-    public void finish(ChromeDriver chromeDriver) {
-        chromeDriver.quit();
-    }
+    public final Chrome chrome;
+    public final ArticleJpaRepository articleRepository;
+    public final MemberJpaRepository memberRepository;
 
     public String extractHost(String urlString) {
         String result = "";
@@ -58,17 +52,17 @@ public class ArticleCrawler {
         ArrayList<ArticleRequestDto> result = new ArrayList<>();
         ArrayList<String> targetList;
         if (Objects.equals(extractHost(url), "velog.io")) {
-            targetList = velocityCrawl(url, name);
+            targetList = velocityCrawl(url);
             for (String target: targetList) {
                 result.add(velogCrawler(target, name));
             }
         } else if (Objects.equals(extractHost(url), "tistory.com")) {
-            targetList = sitemapCrawl(url, name);
+            targetList = sitemapCrawl(url);
             for (String target: targetList) {
                 result.add(metaTagsCrawl(target, name));
             }
         } else if (Objects.equals(extractHost(url), "github.io")) {
-            targetList = sitemapCrawl(url, name);
+            targetList = sitemapCrawl(url);
             for (String target: targetList) {
                 result.add(metaTagsCrawl(target, name));
             }
@@ -76,77 +70,80 @@ public class ArticleCrawler {
         return result;
     }
 
-    public ArrayList<String> sitemapCrawl(String url, String name) {
-        ChromeDriver driver = getStarted();
-        driver.get(url + "sitemap");
-        
-        String source = driver.getPageSource();
+    public ArrayList<String> sitemapCrawl(String url) {
+        chrome.driver.get(url + "sitemap");
+        String source = chrome.driver.getPageSource();
         ArrayList<String> arrays = new ArrayList<>();
         if (Pattern.compile(url + "\\d+").matcher(source).matches()) {
             Matcher matcher = Pattern.compile(url + "\\d+").matcher(source);
-            while (matcher.find()) arrays.add(matcher.group());
+            while (matcher.find()) {
+                String match = matcher.group();
+                if (!(articleRepository.existsArticlesByUrl(match))) {
+                    arrays.add(match);
+                }
+            }
         } else {
             String pattern = url + "entry/" + "[%\\-\\w\\d]+";
             Matcher matcher = Pattern.compile(pattern).matcher(source);
-            while (matcher.find()) arrays.add(matcher.group());
+            while (matcher.find()) {
+                String match = matcher.group();
+                if (!(articleRepository.existsArticlesByUrl(match))) {
+                    arrays.add(match);
+                }
+            }
         }
-        finish(driver);
         return arrays;
     }
 
-    public ArrayList<String> velocityCrawl(String url, String name) {
-        ChromeDriver driver = getStarted();
-        driver.get(url);
-        
+    public ArrayList<String> velocityCrawl(String url) {
+        chrome.driver.get(url);
         String scroll = "window.scrollTo(0, document.body.scrollHeight);";
         String height = "return document.body.scrollHeight;";
-        Long lastHeight = (Long) ((JavascriptExecutor) driver).executeScript(height);
+        Long lastHeight = (Long) ((JavascriptExecutor) chrome.driver).executeScript(height);
         while (true) {
-            ((JavascriptExecutor) driver).executeScript(scroll);
+            ((JavascriptExecutor) chrome.driver).executeScript(scroll);
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            Long newHeight = (Long) ((JavascriptExecutor) driver).executeScript(height);
+            Long newHeight = (Long) ((JavascriptExecutor) chrome.driver).executeScript(height);
             if (lastHeight.equals(newHeight)) break;
             lastHeight = newHeight;
         }
         ArrayList<String> resultArray = new ArrayList<>();
-        List<WebElement> elementList = driver.findElements(
+        List<WebElement> elementList = chrome.driver.findElements(
                 By.xpath("//*[@id='root']/div[2]/div[3]/div[4]/div[3]/div/div/a"));
         for (WebElement element : elementList) {
-            resultArray.add(element.getAttribute("href"));
+            String href = element.getAttribute("href");
+            if (!(articleRepository.existsArticlesByUrl(href))) {
+                resultArray.add(href);
+            }
         }
-        finish(driver);
         return resultArray;
     }
 
     public ArticleRequestDto metaTagsCrawl(String url, String name) {
-        ChromeDriver driver = getStarted();
-        driver.get(url);
-        String title = driver.findElement(By.cssSelector("meta[property='og:title']")).getAttribute("content");
-        String author = driver.findElement(By.cssSelector("meta[property='og:article:author']")).getAttribute("content");
-        String siteName = driver.findElement(By.cssSelector("meta[property='og:site_name']")).getAttribute("content");
-        String registered = driver.findElement(By.cssSelector("meta[property='og:regDate']")).getAttribute("content");
-        String image = driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
-        String description = driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
+        chrome.driver.get(url);
+        String title = chrome.driver.findElement(By.cssSelector("meta[property='og:title']")).getAttribute("content");
+        String author = chrome.driver.findElement(By.cssSelector("meta[property='og:article:author']")).getAttribute("content");
+        String siteName = chrome.driver.findElement(By.cssSelector("meta[property='og:site_name']")).getAttribute("content");
+        String registered = chrome.driver.findElement(By.cssSelector("meta[property='og:regDate']")).getAttribute("content");
+        String image = chrome.driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
+        String description = chrome.driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
         Document result = makeJSON(name, title, author, siteName, url, description, image, registered);
-        finish(driver);
         return new ArticleRequestDto(result);
     }
 
     public ArticleRequestDto velogCrawler(String url, String name) {
-        ChromeDriver driver = getStarted();
-        driver.get(url);
-        String title = driver.getTitle();
-        String image = driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
-        String description = driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
-        String author = driver.findElement(By.cssSelector("span.username a")).getText();
-        String siteName = driver.findElement(By.cssSelector("a.user-logo")).getText();
-        String registered = driver.findElement(By.cssSelector("div.information > span:nth-child(3)")).getText();
+        chrome.driver.get(url);
+        String title = chrome.driver.getTitle();
+        String image = chrome.driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
+        String description = chrome.driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
+        String author = chrome.driver.findElement(By.cssSelector("span.username a")).getText();
+        String siteName = chrome.driver.findElement(By.cssSelector("a.user-logo")).getText();
+        String registered = chrome.driver.findElement(By.cssSelector("div.information > span:nth-child(3)")).getText();
         Document result = makeJSON(name, title, author, siteName, url, description, image, registered);
-        finish(driver);
         return new ArticleRequestDto(result);
     }
 
