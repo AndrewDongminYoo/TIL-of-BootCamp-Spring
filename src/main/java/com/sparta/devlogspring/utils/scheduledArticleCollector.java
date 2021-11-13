@@ -23,12 +23,7 @@ public class scheduledArticleCollector {
     private final MemberJpaRepository memberRepository;
     private final ArticleCrawler articleCrawler;
 
-    public void updateCount(String name) {
-
-
-    }
-
-    @Scheduled(cron = "0 0/3 * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void updateArticle() throws InterruptedException {
 
         List<Member> memberList = memberRepository.findAll();
@@ -43,6 +38,7 @@ public class scheduledArticleCollector {
                 for (ArticleRequestDto dto : dtoList) {
                     String siteName = dto.getSiteName();
                     member.setSiteName(siteName);
+                    memberRepository.save(member);
                     articleRepository.save(new Article(dto));
                 }
             } catch (MalformedURLException e) {
@@ -50,6 +46,7 @@ public class scheduledArticleCollector {
             }
             Long count = articleRepository.countByName(name);
             member.setArticles(count);
+            memberRepository.save(member);
         }
     }
 }

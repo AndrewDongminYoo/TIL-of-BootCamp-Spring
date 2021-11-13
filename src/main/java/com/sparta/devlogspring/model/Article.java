@@ -4,11 +4,9 @@ import com.sparta.devlogspring.dto.ArticleRequestDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Id;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.time.LocalDateTime;
 
 @Getter
@@ -16,7 +14,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Article {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private String id;
 
