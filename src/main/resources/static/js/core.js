@@ -29,7 +29,7 @@ const thumbnail = (til_post) => {
 }
 
 const rankAuthor = (author) => {
-    const { name, blog, profileImage, hobby, specialty } = author;
+    const { name, blog, profileImage, hobby, specialty, articles } = author;
     return `
         <a class="item_recommend" href="${blog}" target="_blank">
             <span class="thumb_g">
@@ -39,6 +39,7 @@ const rankAuthor = (author) => {
                 <div class="inner_recommend">
                     <span class="txt_recommend">${name} 🔥</span>
                     <span class="txt_info">
+                        <span class="txt_g">글 ${articles}개</span>
                         <span class="ico_dot"></span>
                         <span class="txt_g">${hobby}</span>
                         <span class="txt_g">${specialty}</span>

@@ -50,4 +50,17 @@ public class Article {
         this.shared = 0;
         this.comment = 0;
     }
+
+    public void update(ArticleRequestDto requestDto) {
+        this.name = requestDto.getName();
+        this.author = requestDto.getAuthor();
+        this.title = requestDto.getTitle();
+        this.siteName = requestDto.getSiteName();
+        this.url = requestDto.getUrl();
+        this.description = requestDto.getDescription();
+        this.image = requestDto.getImage();
+        this.registered = requestDto.getRegistered();
+        this.shared = requestDto.getShared();
+        this.comment = requestDto.getComment();
+    }
 }
