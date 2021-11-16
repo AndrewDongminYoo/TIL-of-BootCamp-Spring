@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -23,7 +24,8 @@ public class scheduledArticleCollector {
     private final MemberJpaRepository memberRepository;
     private final ArticleCrawler articleCrawler;
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Transactional
+    @Scheduled(cron = "0 0 9,21 * * *")
     public void updateArticle() throws InterruptedException {
 
         List<Member> memberList = memberRepository.findAll();
@@ -42,7 +44,7 @@ public class scheduledArticleCollector {
                     articleRepository.save(new Article(dto));
                 }
             } catch (MalformedURLException e) {
-                System.out.println(e.getMessage());
+                System.out.println(e.getMessage()+" URL "+target);
             }
             Long count = articleRepository.countByName(name);
             member.setArticles(count);

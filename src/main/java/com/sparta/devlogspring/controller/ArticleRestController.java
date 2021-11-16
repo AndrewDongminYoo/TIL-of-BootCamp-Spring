@@ -7,6 +7,7 @@ import com.sparta.devlogspring.model.MemberJpaRepository;
 import com.sparta.devlogspring.service.ArticleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Comparator;
@@ -22,8 +23,12 @@ public class ArticleRestController {
     private final MemberJpaRepository memberJpaRepository;
 
     @GetMapping("/api/list")
-    public List<Article> readArticle() {
-        return articleJpaRepository
+    public List<Article> readArticle(@RequestParam(value="query", required = false) String query) {
+        if (query != null) {
+            return articleJpaRepository
+                .findArticlesByDescriptionContainsOrTitleContains(query, query);
+        } else {
+            return articleJpaRepository
                 .findAll()
                 .stream()
                 .sorted(Comparator
@@ -31,7 +36,8 @@ public class ArticleRestController {
                         .reversed())
                 .limit(50)
                 .collect(Collectors.toList());
-    }
+        }
+}
 
     @GetMapping("/api/rank")
     public List<Member> rankerBlog() {
