@@ -25,7 +25,7 @@ public class scheduledArticleCollector {
     private final ArticleCrawler articleCrawler;
 
     @Transactional
-    @Scheduled(cron = "0 0 9,21 * * *")
+    @Scheduled(cron = "0 44 * * * *")
     public void updateArticle() throws InterruptedException {
 
         List<Member> memberList = memberRepository.findAll();

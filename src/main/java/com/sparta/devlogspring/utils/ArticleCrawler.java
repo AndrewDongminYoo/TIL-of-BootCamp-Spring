@@ -6,12 +6,12 @@ import com.sparta.devlogspring.model.MemberJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.json.JSONObject;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
@@ -146,7 +146,7 @@ public class ArticleCrawler {
     public ArticleRequestDto metaTagsCrawl(String url, String name) {
         ChromeDriver driver = ChromeWebDriver();
         driver.get(url);
-        String title = null, author = null, siteName = null, description = null, image = null, registered = null;
+        String title = "", author = "", siteName = "", description = "", image = "", registered = "";
         try {
             title = driver.findElement(By.cssSelector("meta[property='og:title']")).getAttribute("content");
             author = driver.findElement(By.cssSelector("meta[property='og:article:author']")).getAttribute("content");
@@ -154,12 +154,15 @@ public class ArticleCrawler {
             registered = driver.findElement(By.cssSelector("meta[property='og:regDate']")).getAttribute("content");
             image = driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
             description = driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
+            JSONObject result = makeJSON(name, title, author, siteName, url, description, image, registered);
+            driver.quit();
+            return new ArticleRequestDto(result);
         } catch (NoSuchElementException e) {
             System.out.println(e.getLocalizedMessage());
+            JSONObject result = new JSONObject();
+            driver.quit();
+            return new ArticleRequestDto(result);
         }
-        JSONObject result = makeJSON(name, title, author, siteName, url, description, image, registered);
-        driver.quit();
-        return new ArticleRequestDto(result);
     }
 
     public ArticleRequestDto velogCrawler(String url, String name) {
