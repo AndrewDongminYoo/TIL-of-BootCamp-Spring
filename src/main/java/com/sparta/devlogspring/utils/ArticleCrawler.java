@@ -60,7 +60,7 @@ public class ArticleCrawler {
                 result = match.group();
             }
         } catch (MalformedURLException e) {
-            result = e.getMessage();
+            result = e.getMessage()+urlString;
         }
         return result;
     }
@@ -124,7 +124,7 @@ public class ArticleCrawler {
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.out.println("InterruptedException");
             }
             Long newHeight = (Long) ((JavascriptExecutor) driver).executeScript(height);
             if (lastHeight.equals(newHeight)) break;
@@ -158,7 +158,7 @@ public class ArticleCrawler {
             driver.quit();
             return new ArticleRequestDto(result);
         } catch (NoSuchElementException e) {
-            System.out.println(e.getLocalizedMessage());
+            System.out.println("NoSuchElementException"+url);
             JSONObject result = new JSONObject();
             driver.quit();
             return new ArticleRequestDto(result);

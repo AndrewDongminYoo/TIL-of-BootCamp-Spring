@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
-public class scheduledArticleCollector {
+public class ScheduledArticleCollector {
 
     private final ArticleJpaRepository articleRepository;
     private final MemberJpaRepository memberRepository;
@@ -34,6 +34,7 @@ public class scheduledArticleCollector {
             TimeUnit.SECONDS.sleep(1);
             String target = member.getBlog();
             String name = member.getName();
+            if (target==null) continue;
             try {
                 new URL(target);
                 ArrayList<ArticleRequestDto> dtoList = articleCrawler.crawlerRouter(target, name);
@@ -41,6 +42,7 @@ public class scheduledArticleCollector {
                     String siteName = dto.getSiteName();
                     member.setSiteName(siteName);
                     memberRepository.save(member);
+                    if (articleRepository.existsArticlesByUrl(dto.getUrl())) continue;
                     articleRepository.save(new Article(dto));
                 }
             } catch (MalformedURLException e) {

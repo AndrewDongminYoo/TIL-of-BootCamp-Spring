@@ -13,5 +13,4 @@ public class DevlogSpringApplication {
     public static void main(String[] args) {
         SpringApplication.run(DevlogSpringApplication.class, args);
     }
-
 }
