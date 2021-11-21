@@ -77,6 +77,7 @@ class ArticleCrawlerTest {
             while (matcherEnt.find()) {
                 String match = matcherEnt.group();
                 System.out.println(match);
+
             }
         }
     }

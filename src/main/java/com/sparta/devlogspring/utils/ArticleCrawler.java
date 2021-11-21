@@ -1,13 +1,12 @@
 package com.sparta.devlogspring.utils;
 
 import com.sparta.devlogspring.dto.ArticleRequestDto;
+import com.sparta.devlogspring.model.Article;
 import com.sparta.devlogspring.model.ArticleJpaRepository;
 import com.sparta.devlogspring.model.MemberJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.json.JSONObject;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
@@ -33,36 +32,21 @@ public class ArticleCrawler {
 
     public final ArticleJpaRepository articleRepository;
     public final MemberJpaRepository memberRepository;
-
-    public ChromeDriver ChromeWebDriver() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless",
-                "--no-sandbox",
-                "--disable-extensions",
-                "--disable-gpu",
-                "--window-size=1920,1200",
-                "--ignore-certificate-errors",
-                "--whitelisted-ips=''",
-                "--disable-dev-shm-usage");
-        ChromeDriver driver = new ChromeDriver(options);
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-        return driver;
-    }
+    public final ChromeWebDriver driver;
 
     public String extractHost(String urlString) {
-        String result = "";
         try {
             URL url = new URL(urlString);
             String host = url.getHost();
             Pattern pattern = Pattern.compile("(?:blog\\.)*[a-z]+\\.[a-z]{2,4}$");
             Matcher match = pattern.matcher(host);
             if (match.find()) {
-                result = match.group();
+                return match.group();
             }
         } catch (MalformedURLException e) {
-            result = e.getMessage()+urlString;
+            return e.getMessage()+urlString;
         }
-        return result;
+        return urlString;
     }
 
     public ArrayList<ArticleRequestDto> crawlerRouter(String url, String name) {
@@ -88,7 +72,6 @@ public class ArticleCrawler {
     }
 
     public ArrayList<String> sitemapCrawl(String url) {
-        ChromeDriver driver = ChromeWebDriver();
         driver.get(url + "sitemap");
         String source = driver.getPageSource();
         Matcher matcherNum = Pattern.compile(url + "\\d+").matcher(source);
@@ -109,12 +92,10 @@ public class ArticleCrawler {
                 }
             }
         }
-        driver.quit();
         return arrays;
     }
 
     public ArrayList<String> velocityCrawl(String url) {
-        ChromeDriver driver = ChromeWebDriver();
         driver.get(url);
         String scroll = "window.scrollTo(0, document.body.scrollHeight);";
         String height = "return document.body.scrollHeight;";
@@ -139,14 +120,12 @@ public class ArticleCrawler {
                 resultArray.add(href);
             }
         }
-        driver.quit();
         return resultArray;
     }
 
     public ArticleRequestDto metaTagsCrawl(String url, String name) {
-        ChromeDriver driver = ChromeWebDriver();
         driver.get(url);
-        String title = "", author = "", siteName = "", description = "", image = "", registered = "";
+        String title, author, siteName, description, image, registered;
         try {
             title = driver.findElement(By.cssSelector("meta[property='og:title']")).getAttribute("content");
             author = driver.findElement(By.cssSelector("meta[property='og:article:author']")).getAttribute("content");
@@ -155,18 +134,19 @@ public class ArticleCrawler {
             image = driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
             description = driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
             JSONObject result = makeJSON(name, title, author, siteName, url, description, image, registered);
-            driver.quit();
-            return new ArticleRequestDto(result);
+            ArticleRequestDto dto = new ArticleRequestDto(result);
+            articleRepository.save(new Article(dto));
+            return dto;
         } catch (NoSuchElementException e) {
             System.out.println("NoSuchElementException"+url);
             JSONObject result = new JSONObject();
-            driver.quit();
-            return new ArticleRequestDto(result);
+            ArticleRequestDto dto = new ArticleRequestDto(result);
+            articleRepository.save(new Article(dto));
+            return dto;
         }
     }
 
     public ArticleRequestDto velogCrawler(String url, String name) {
-        ChromeDriver driver = ChromeWebDriver();
         driver.get(url);
         String title = driver.getTitle();
         String image = driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
@@ -175,8 +155,9 @@ public class ArticleCrawler {
         String siteName = driver.findElement(By.cssSelector("a.user-logo")).getText();
         String registered = driver.findElement(By.cssSelector("div.information > span:nth-child(3)")).getText();
         JSONObject result = makeJSON(name, title, author, siteName, url, description, image, registered);
-        driver.quit();
-        return new ArticleRequestDto(result);
+        ArticleRequestDto dto = new ArticleRequestDto(result);
+        articleRepository.save(new Article(dto));
+        return dto;
     }
 
     public JSONObject makeJSON(String name, String title, String author, String siteName, String url, String description, String image, String registered) {
