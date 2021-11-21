@@ -1,7 +1,6 @@
 package com.sparta.devlogspring.utils;
 
 import com.sparta.devlogspring.dto.ArticleRequestDto;
-import com.sparta.devlogspring.model.Article;
 import com.sparta.devlogspring.model.ArticleJpaRepository;
 import com.sparta.devlogspring.model.Member;
 import com.sparta.devlogspring.model.MemberJpaRepository;
@@ -25,9 +24,8 @@ public class ScheduledArticleCollector {
     private final ArticleCrawler articleCrawler;
 
     @Transactional
-    @Scheduled(cron = "0 0 9,21 * * *")
+    @Scheduled(cron = "0 0 1,9,17 * * *")
     public void updateArticle() throws InterruptedException {
-
         List<Member> memberList = memberRepository.findAll();
         System.out.println(memberList);
         for (Member member : memberList) {
@@ -42,8 +40,6 @@ public class ScheduledArticleCollector {
                     String siteName = dto.getSiteName();
                     member.setSiteName(siteName);
                     memberRepository.save(member);
-                    if (articleRepository.existsArticlesByUrl(dto.getUrl())) continue;
-                    articleRepository.save(new Article(dto));
                 }
             } catch (MalformedURLException e) {
                 System.out.println(e.getMessage()+" URL "+target);

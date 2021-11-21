@@ -1,6 +1,7 @@
 package com.sparta.devlogspring.utils;
 
 import com.sparta.devlogspring.dto.ArticleRequestDto;
+import com.sparta.devlogspring.model.Article;
 import com.sparta.devlogspring.model.ArticleJpaRepository;
 import com.sparta.devlogspring.model.MemberJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -50,19 +51,18 @@ public class ArticleCrawler {
     }
 
     public String extractHost(String urlString) {
-        String result = "";
         try {
             URL url = new URL(urlString);
             String host = url.getHost();
             Pattern pattern = Pattern.compile("(?:blog\\.)*[a-z]+\\.[a-z]{2,4}$");
             Matcher match = pattern.matcher(host);
             if (match.find()) {
-                result = match.group();
+                return match.group();
             }
         } catch (MalformedURLException e) {
-            result = e.getMessage()+urlString;
+            return e.getMessage()+urlString;
         }
-        return result;
+        return urlString;
     }
 
     public ArrayList<ArticleRequestDto> crawlerRouter(String url, String name) {
@@ -146,7 +146,7 @@ public class ArticleCrawler {
     public ArticleRequestDto metaTagsCrawl(String url, String name) {
         ChromeDriver driver = ChromeWebDriver();
         driver.get(url);
-        String title = "", author = "", siteName = "", description = "", image = "", registered = "";
+        String title, author, siteName, description, image, registered;
         try {
             title = driver.findElement(By.cssSelector("meta[property='og:title']")).getAttribute("content");
             author = driver.findElement(By.cssSelector("meta[property='og:article:author']")).getAttribute("content");
@@ -155,13 +155,17 @@ public class ArticleCrawler {
             image = driver.findElement(By.cssSelector("meta[property='og:image']")).getAttribute("content");
             description = driver.findElement(By.cssSelector("meta[property='og:description']")).getAttribute("content");
             JSONObject result = makeJSON(name, title, author, siteName, url, description, image, registered);
+            ArticleRequestDto dto = new ArticleRequestDto(result);
+            articleRepository.save(new Article(dto));
             driver.quit();
-            return new ArticleRequestDto(result);
+            return dto;
         } catch (NoSuchElementException e) {
             System.out.println("NoSuchElementException"+url);
             JSONObject result = new JSONObject();
+            ArticleRequestDto dto = new ArticleRequestDto(result);
+            articleRepository.save(new Article(dto));
             driver.quit();
-            return new ArticleRequestDto(result);
+            return dto;
         }
     }
 
@@ -175,8 +179,10 @@ public class ArticleCrawler {
         String siteName = driver.findElement(By.cssSelector("a.user-logo")).getText();
         String registered = driver.findElement(By.cssSelector("div.information > span:nth-child(3)")).getText();
         JSONObject result = makeJSON(name, title, author, siteName, url, description, image, registered);
+        ArticleRequestDto dto = new ArticleRequestDto(result);
+        articleRepository.save(new Article(dto));
         driver.quit();
-        return new ArticleRequestDto(result);
+        return dto;
     }
 
     public JSONObject makeJSON(String name, String title, String author, String siteName, String url, String description, String image, String registered) {
